@@ -8,7 +8,7 @@ interface HomeProps {}
 
 const Home: FC<HomeProps> = ({}) => {
 	const [color, setColor] = useState<string>("#000");
-	const { canvasRef, onMouseDown, clear } = useDraw(drawLine);
+	const { canvasRef, onMouseDown, clear, download } = useDraw(drawLine);
 
 	function drawLine({ prevPoint, currentPoint, ctx }: Draw) {
 		const { x: currX, y: currY } = currentPoint;
@@ -31,7 +31,7 @@ const Home: FC<HomeProps> = ({}) => {
 
 	return (
 		<div className="w-screen h-screen bg-white flex justify-center items-center">
-			<div className="flex flex-col gap-10 pr-10">
+			<div className="flex flex-col gap-5 pr-10">
 				<ChromePicker color={color} onChange={(e) => setColor(e.hex)} className="select-none" />
 				<button
 					type="button"
@@ -40,13 +40,20 @@ const Home: FC<HomeProps> = ({}) => {
 				>
 					Clear Canvas
 				</button>
+				<button
+					type="button"
+					className="p-2 rounded-md border border-black select-none"
+					onClick={download}
+				>
+					Download Canvas
+				</button>
 			</div>
 			<canvas
 				ref={canvasRef}
 				onMouseDown={onMouseDown}
 				width={750}
 				height={750}
-				className="border border-black rounded- bg-white"
+				className="border border-black rounded bg-white"
 			/>
 		</div>
 	);

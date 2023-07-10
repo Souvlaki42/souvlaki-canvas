@@ -10,33 +10,43 @@ export const useDraw = (
 
 	const onMouseDown = () => setMouseDown(true);
 
-    const clear = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+	const download = () => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+		const link = document.createElement("a");
+		link.download = "canvas.png";
+		link.href = canvas.toDataURL();
+		link.click();
+	}
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+	const clear = () => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
+
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	};
 
 	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
 		const handler = (e: MouseEvent) => {
-            if (!mouseDown) return;
+			if (!mouseDown) return;
 
 			const currentPoint = computePointInCanvas(e);
 
-			const ctx = canvasRef.current?.getContext("2d");
+			const ctx = canvas.getContext("2d");
 			if (!ctx || !currentPoint) return;
 
 			onDraw({ ctx, currentPoint, prevPoint: prevPoint.current });
-            prevPoint.current = currentPoint;
+			prevPoint.current = currentPoint;
 		};
 
 		const computePointInCanvas = (e: MouseEvent) => {
-			const canvas = canvasRef.current;
-			if (!canvas) return;
-
 			const rect = canvas.getBoundingClientRect();
 			const x = e.clientX - rect.left;
 			const y = e.clientY - rect.top;
@@ -44,19 +54,20 @@ export const useDraw = (
 			return { x, y };
 		};
 
-        const mouseUpHandler = () => {
-            setMouseDown(false);
-            prevPoint.current = null;
-        } 
+		const mouseUpHandler = () => {
+			setMouseDown(false);
+			prevPoint.current = null;
+		};
 
-		canvasRef.current?.addEventListener("mousemove", handler);
-        window.addEventListener("mouseup", mouseUpHandler);
-        
+		canvas.addEventListener("mousemove", handler);
+		window.addEventListener("mouseup", mouseUpHandler);
+
 		return () => {
-            canvasRef.current?.removeEventListener("mousemove", handler);
-            window.removeEventListener("mouseup", mouseUpHandler);
-        } 
-	}, [onDraw]);
+			const cleanUp = canvas;
+			cleanUp.removeEventListener("mousemove", handler);
+			window.removeEventListener("mouseup", mouseUpHandler);
+		};
+	}, [onDraw, mouseDown]);
 
-	return { canvasRef, onMouseDown, clear };
+	return { canvasRef, onMouseDown, clear, download };
 };
